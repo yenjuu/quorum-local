@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.0 <0.6.0;
+
+contract contract_name {
+    address owner;
+    string tx_hash;
+    string[] list;
+    uint256 list_len = 0;
+
+    constructor() public {
+        owner = msg.sender;
+    }
+
+    mapping(string => attrUser) public attrUsers;
+    event logObjs(string userID, string tx_hash, string timestamp);
+    struct attrUser {
+        string userID;
+        string timestamp;
+    }
+
+    // User object which we will store
+    function add_data(
+        string memory _userID,
+        string memory _tx_hash,
+        string memory _timestamp
+    ) public {
+        attrUser memory data = attrUser(_userID, _timestamp);
+        attrUsers[_tx_hash] = data;
+        list.push(_tx_hash);
+        list_len = list_len + 1;
+        emit logObjs(_userID, _tx_hash, _timestamp);
+    }
+
+    function get_data() public view returns (string memory, uint256) {
+        string memory output = "";
+        for (uint256 i = 0; i < list_len; i++) {
+            string memory tmp;
+
+            attrUser memory data = attrUsers[list[i]];
+
+            tmp = concatenate(tmp, data.userID);
+            tmp = concatenate(tmp, "/");
+            tmp = concatenate(tmp, list[i]);
+            tmp = concatenate(tmp, "/");
+            tmp = concatenate(tmp, data.timestamp);
+            tmp = concatenate(tmp, ";");
+
+            output = concatenate(output, tmp);
+        }
+        return (output, list_len);
+    }
+
+    function delete_data(string memory _tx_hash) public returns (bool) {
+        for (uint256 i = 0; i < list.length; i++) {
+            if (comparestring(list[i], _tx_hash)) {
+                delete attrUsers[list[i]];
+                attrUsers[list[i]] = attrUsers[list[list.length - 1]];
+                delete list[i];
+                list[i] = list[list.length - 1];
+                list.length--;
+                list_len--;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function concatenate(string memory a, string memory b)
+        internal
+        pure
+        returns (string memory)
+    {
+        return string(abi.encodePacked(a, b));
+    }
+
+    function comparestring(string memory a, string memory b)
+        internal
+        pure
+        returns (bool)
+    {
+        if (keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b))) {
+            return true;
+        }
+        return false;
+    }
+}
