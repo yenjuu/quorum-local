@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import json
 import time
 import errno
@@ -46,7 +47,7 @@ def change_dir(path):
 
 
 def get_acct(env_num, total_num):
-    change_dir("/home/quorum/quorum/fromscratch/")
+    change_dir("/Users/ariel/quorum-local/quorum/fromscratch/")
     for i in range(1, total_num + 1):
         keystore = run_command(f"ls new-node-{i}/keystore").split("-")
         keystore = keystore[len(keystore) - 1].replace("\n", "")
@@ -70,7 +71,7 @@ def get_acct(env_num, total_num):
 
 # load account from genesis.json
 def reload_account():
-    change_dir("/home/quorum/quorum_code")
+    change_dir("/Users/ariel/quorum-local/quorum_code")
     # write to object_data.json file, to add data
     with open("object_data.json", "r", encoding="utf8") as jfile:
         jdata = json.load(jfile)
@@ -86,7 +87,7 @@ def reload_account():
 
 def db_link():
     # link to DB
-    db_url = r"/home/quorum/quorum_code/sqlite/quorum.db"
+    db_url = r"/Users/ariel/quorum-local/sqlite/quorum.db"
     db_conn = sqlite3.connect(db_url)
     cur = db_conn.cursor()
     return (cur, db_conn)
@@ -143,7 +144,8 @@ def delete_db(contract_name):
     cur, db_conn = db_link()
     # contract_name = str(input())
     print("Delete contract: " + contract_name)
-    cur.execute("DELETE FROM contract_data WHERE contract_name=(?)", [contract_name])
+    cur.execute("DELETE FROM contract_data WHERE contract_name=(?)", [
+                contract_name])
     db_conn.commit()
     db_conn.close()
 

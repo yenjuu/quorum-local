@@ -14,7 +14,7 @@ from web3.middleware import geth_poa_middleware
 
 # link to quorum
 quorum_url = ""
-gov_acct = "0xf9231a78a826Efc09AeBC9ee2DaE826CC45aC583"
+gov_acct = "0x278f83d701cc7dae370fe48e5c7f0d9560b6c842"
 user_acct = ""
 # quorum_url = "http://192.168.66.28:22000"
 # quorum_url = "http://127.0.0.1:22000"
@@ -27,7 +27,7 @@ user_acct = ""
 
 def db_link():
     # link to DB
-    db_url = r'/home/quorum/quorum_code/sqlite/quorum.db'
+    db_url = r'/Users/ariel/quorum-local/sqlite/quorum.db'
     db_conn = sqlite3.connect(db_url)
     cur = db_conn.cursor()
     return (cur, db_conn)
@@ -159,13 +159,18 @@ def saveHashToAttrContract(user_acct, tx_hash, attr):
                 contract_source_file, contract_name)
             attr_name, address, attr_abi = deploy_contract(
                 gov_acct, abi, bytecode, contract_name)
+            print("attr_name: ", attr_name, "address: ",
+                  address, "attr_abi: ", attr_abi)
             # 將屬性合約的address, abi 記錄到log裡，並將屬性合約名稱與部署的hash存到 attrRecord contract裡
             contract_interface = contract_instance("attrRecord")
             log_hash = contract_interface.functions.add_event(
                 abi, address).transact({'from': user_acct})
+            print("log_hash:", log_hash)
+            log_hash = web3.toHex(log_hash)
             contract_interface.functions.add_data(
-                attr_name, web3.toHex(log_hash)).transact({'from': user_acct})
+                attr_name, log_hash).transact({'from': user_acct})
             print("List attribute contracts in attrRecord.. \n")
+            time.sleep(2)
             print(contract_interface.functions.get_all_data().call())
     # 有屬性合約 先從attrRecord合約裡抓log hash，去log查address跟abi，對屬性合約做交易
     attr_name, log_hash = contract_interface.functions.get_a_data(attr).call()

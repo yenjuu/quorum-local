@@ -1,4 +1,4 @@
-#!/home/quorum/.pyenv/shims/python
+#!/Users/ariel/quorum-local/.pyenv/shims/python
 
 import os
 import sys
@@ -40,7 +40,7 @@ def autofill(cmd):
 def add_node_cmd(node_num):
     # TODO: 測能不能在raft裡成功新增節點
     i = node_num+1
-    command = f"cat /home/quorum/quorum/fromscratch/new-node-{i}/enode"
+    command = f"cat /Users/ariel/quorum-local/quorum/fromscratch/new-node-{i}/enode"
     enode_id = run_command(command).replace("\n", "")
     enode_url = (
         f"enode://{enode_id}@127.0.0.1:{21000+i-1}?discport=0&raftport={50000+i-1}"
@@ -59,7 +59,7 @@ def add_node_cmd(node_num):
 
 
 def edit_genesis(keystore):
-    change_dir("/home/quorum/quorum/fromscratch")
+    change_dir("/Users/ariel/quorum-local/quorum/fromscratch")
 
     keystore = "0x" + keystore
     print(keystore)
@@ -81,7 +81,7 @@ def edit_genesis(keystore):
 
 
 def gen_key(i):
-    change_dir("/home/quorum/quorum/fromscratch")
+    change_dir("/Users/ariel/quorum-local/quorum/fromscratch")
     os.system(f"bootnode --genkey=nodekey{i}")
     os.system(f"mv nodekey{i} new-node-{i}/nodekey")
     os.system(
@@ -108,7 +108,7 @@ def gen_key(i):
 
 
 def init_node(i):
-    change_dir("/home/quorum/quorum/fromscratch")
+    change_dir("/Users/ariel/quorum-local/quorum/fromscratch")
     try:
         os.system(f"geth --datadir new-node-{i} init genesis.json")
     except OSError:
@@ -120,7 +120,7 @@ def init():
     建立初始節點
     """
 
-    os.chdir("/home/quorum")
+    os.chdir("/Users/ariel/quorum-local")
     os.system("git clone https://github.com/ConsenSys/quorum.git")
     os.chdir(os.getcwd() + "/quorum/")
     # os.chdir("~/quorum/")
@@ -147,12 +147,13 @@ def init():
     print(type(keystore))
     print("account: ", keystore)
 
-    os.system("cp /home/quorum/quorum_template/genesis_template.json genesis.json")
+    os.system(
+        "cp /Users/ariel/quorum-local/quorum_template/genesis_template.json genesis.json")
     edit_genesis(keystore)
 
     # Create enode_id & Edit static-node.json
     os.system(
-        "cp /home/quorum/quorum_template/static-nodes_template.json static-nodes.json"
+        "cp /Users/ariel/quorum-local/quorum_template/static-nodes_template.json static-nodes.json"
     )
     # ADD NODEKEY
     os.system("bootnode --genkey=nodekey")
@@ -176,7 +177,8 @@ def init():
     init_node(1)
     os.system("mkdir log")
     # Edit startnode.sh
-    os.system("cp /home/quorum/quorum_template/startnode_template.sh startnode.sh")
+    os.system(
+        "cp /Users/ariel/quorum-local/quorum_template/startnode_template.sh startnode.sh")
     # print("> ls\n" + run_command("ls -al"))
     os.system("chmod +x startnode.sh")
     # print("> ls\n" + run_command("ls -al"))
@@ -188,7 +190,7 @@ def add_node(num):
     Args:
         num (int): 輸入總節點數
     """
-    change_dir("/home/quorum/quorum/fromscratch")
+    change_dir("/Users/ariel/quorum-local/quorum/fromscratch")
 
     for i in range(2, num + 1):
         try:
@@ -214,7 +216,7 @@ def add_node(num):
                 # jfile.write(f"PRIVATE_CONFIG=ignore nohup geth --datadir new-node-{i} --nodiscover --verbosity 5 --networkid 31337 --raft --raftport {50000+i-1} --raftjoinexisting {i} --rpc --rpcaddr 0.0.0.0 --rpcport {22000+i-1} --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --emitcheckpoints --port {21000+i-1} 2>>node{i}.log &")
                 # jfile.write(f"PRIVATE_CONFIG=ignore nohup geth --datadir new-node-{i} --verbosity 5 --networkid 31337 --raft --raftport {50000+i-1} --raftjoinexisting {i} --rpc --rpcaddr 0.0.0.0 --rpcport {22000+i-1} --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --bootnodes --emitcheckpoints --port {21000+i-1} 2>>node{i}.log &")
                 jfile.write(
-                    f"PRIVATE_CONFIG=ignore nohup geth --datadir new-node-{i} --nodiscover --verbosity 5 --networkid 31337 --raft --raftport {50000+i-1} --raftjoinexisting {i} --rpc --rpcaddr 0.0.0.0 --rpcport {22001+i-1} --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --emitcheckpoints --port {21000+i-1} 2>>log/node{i}.log &"
+                    f"PRIVATE_CONFIG=ignore nohup geth --datadir new-node-{i} --nodiscover --verbosity 5 --networkid 31337 --raft --raftport {50000+i-1} --raftjoinexisting {i} --rpc --rpcaddr 0.0.0.0 --rpcport {22001+i-1} --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --allow-insecure-unlock --emitcheckpoints --port {21000+i-1} 2>>log/node{i}.log &"
                 )
                 jfile.write("\n")
         except OSError as exc:
@@ -224,7 +226,7 @@ def add_node(num):
 
     # 停掉初始節點，把所有節點都啟動後將節點加入
     # run_command("killall geth")
-    # change_dir("/home/quorum/quorum/fromscratch")
+    # change_dir("/Users/ariel/quorum-local/quorum/fromscratch")
     # run_command("./startnode.sh")
     # os.system("ps")
     # cmd in geth & Add node to node1
@@ -240,7 +242,7 @@ if __name__ == "__main__":
 
     run_command("killall geth")
     time.sleep(1)
-    os.popen("sh /home/quorum/quorum/fromscratch/startnode.sh")
+    os.popen("sh /Users/ariel/quorum-local/quorum/fromscratch/startnode.sh")
     os.system("ps")
     # cmd in geth & Add node to node1
     for i in range(2, total_num+1):

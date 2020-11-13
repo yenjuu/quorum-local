@@ -21,9 +21,10 @@ total_num = 13
 
 # 與不同節點建立連線，抓取每個節點的帳號
 for i in range(env_num+1, total_num+1):
-    url = f"http://127.0.0.1:2200{i}"
+    j = 22000+i
+    url = f"http://127.0.0.1:{j}"
     web3 = Web3(Web3.HTTPProvider(url))
-    print(f"Connected to port 2200{i}")
+    print(f"Connected to port {j}")
     print(web3.isConnected())
     print(web3.eth.accounts[0])
     user_acct = web3.eth.accounts[0]
@@ -33,7 +34,6 @@ for i in range(env_num+1, total_num+1):
     with open("object_data.json")as json_file:
         obj_file = json.load(json_file)
         obj = obj_file['objects']
-        
         # 改成直接從區塊鏈上抓
         _acct = user_acct
         _obj = obj[i-4]['obj']
