@@ -10,13 +10,13 @@ from web3.middleware import geth_poa_middleware
 from web3.providers.eth_tester import EthereumTesterProvider
 
 # link to quorum
-quorum_url = "http://192.168.66.28:22000"
+quorum_url = "http://127.0.0.1:22000"
 
 
 web3 = Web3(Web3.HTTPProvider(quorum_url))
-#web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-web3.eth.defaultAccount = web3.eth.accounts[1]
-#web3.parity.personal.unlock_account(web3.eth.accounts[0], "123", 15000)
+web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+web3.eth.defaultAccount = web3.eth.accounts[0]
+web3.parity.personal.unlock_account(web3.eth.accounts[0], "123", 15000)
 
 gov_acct = web3.eth.accounts[0]
 
@@ -29,10 +29,9 @@ gov_acct = web3.eth.accounts[0]
 """
 
 
-
 def db_link():
     # link to DB
-    db_url = r'/Users/ariel/Documents/sqlite/quorum.db'
+    db_url = r'/Users/ariel/quorum-local/sqlite/quorum.db'
     db_conn = sqlite3.connect(db_url)
     cur = db_conn.cursor()
     return (cur, db_conn)
@@ -65,7 +64,7 @@ def contract_interact(abi, address):
 def getObjAttr(tx_hash):
     # 根據註冊物件時的log tash，看此物件的屬性是什麼
     contract_interface = contract_instance("registered")
-    tx_receipt = web3.eth.getTransactionReceipt(tx_hash)
+    tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
     log_to_process = tx_receipt['logs'][0]
     processed_logs = contract_interface.events.logObjs().processLog(log_to_process)
     obj_attr = processed_logs['args']['attr']
@@ -81,7 +80,7 @@ def getObjAttr(tx_hash):
         # 有屬性合約 先從attrRecord合約裡抓log hash，去log查address跟abi，對屬性合約做交易
         print(
             f"> Get attr contract name: {attr_name}, Contract log hash: {log_hash }\n")
-        tx_receipt = web3.eth.getTransactionReceipt(log_hash)
+        tx_receipt = web3.eth.waitForTransactionReceipt(log_hash)
         log_to_process = tx_receipt['logs'][0]
         processed_logs = contract_interface.events.setLog().processLog(log_to_process)
         abi = processed_logs['args']['attrABI']
@@ -91,17 +90,16 @@ def getObjAttr(tx_hash):
 
 
 def randomNum():
-    g_acct = web3.eth.accounts[2]
     # 聽到參加者夠發的event gov就發隨機數到合約裡
     r = secrets.randbits(64)
     contract_interface = contract_instance("whitelist")
     print("> Calculate the difference of user's secrets with a random number. \n")
     contract_interface.functions.calc_random(
-        r).transact({'from': g_acct})
+        r).transact({'from': gov_acct})
     # print(contract_interface.functions.get_data().call())
     print("!!!")
     contract_interface_2 = contract_instance("whitelist")
-    contract_interface_2.functions.sort().transact({'from': g_acct})
+    contract_interface_2.functions.sort().transact({'from': gov_acct})
     print("???")
     pprint.pprint(contract_interface.functions.get_difference().call())
     print("\n")
@@ -114,13 +112,13 @@ def randomNum():
 
 def set_whitelist():
     # 設置白名單，可更改要取所有隨機數中前 X% 的物品進入白名單，做交換。
-    x = 2  # 隨著總人數不同 同樣％數 除的數字要不同
+    x = 10  # 隨著總人數不同 同樣％數 除的數字要不同
     print("> Setting whitelist...\n")
     contract_interface = contract_instance("whitelist")
     print(f"> Select the top {x} objects to add to the whitelist\n")
     tx_hash = contract_interface.functions.set_whiteList(
         x).transact({'from': gov_acct})
-    tx_receipt = web3.eth.getTransactionReceipt(web3.toHex(tx_hash))
+    tx_receipt = web3.eth.waitForTransactionReceipt(web3.toHex(tx_hash))
     log_to_process = tx_receipt['logs'][0]
     processed_logs = contract_interface.events.whitelist_log().processLog(log_to_process)
     print("> Whitelist: ")
@@ -153,6 +151,7 @@ def clean(_hash_a, _hash_b):
     print("> Exchange success objects' records are deleted. \n")
     # 再起一個whitelist listener
     lis_setWhitelist()
+
 
 def clean_expired():
     # 清掉過期未交換成功的物件
@@ -198,6 +197,7 @@ def log_loop_result(event_filter_result, poll_interval):
             print(f"lis_result thread={ident}.. \n")
             #tag = False
             break
+
 
 def lis_setWhitelist():
     contract_interface = contract_instance("whitelist")

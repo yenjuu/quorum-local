@@ -39,5 +39,16 @@ for i in range(env_num+1, total_num+1):
         _obj = obj[i-4]['obj']
         _attr = obj[i-4]['attr']
         _wishlist = obj[i-4]['wishlist']
-        register.get_url(url)
-        register.run(_acct, _obj, _attr, _wishlist)
+        for k in range(9):
+            no = str(int(_attr[1:]) + 1)
+            _obj = no
+            _attr = 'n' + no
+            print("no: ", no)
+            print(type(no))
+            print("_obj:",_obj)
+            print("_attr:",_attr)
+            print("wishlist: ", _wishlist)
+            print(type(_wishlist))
+            
+            register.get_url(url)
+            register.run(_acct, _obj, _attr, _wishlist)

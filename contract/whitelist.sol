@@ -22,7 +22,7 @@ contract whitelist {
     function add_user_secret(string memory _tx_hash, int256 _S) public {
         tx_hash.push(_tx_hash);
         S.push(_S);
-        if (S.length >= 5 && flag == true) {
+        if (S.length >= 100 && flag == true) {
             uint256 num = S.length;
             emit participant(num);
             flag = false;

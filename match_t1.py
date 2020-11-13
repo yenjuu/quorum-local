@@ -11,20 +11,20 @@ from web3.middleware import geth_poa_middleware
 from web3.providers.eth_tester import EthereumTesterProvider
 
 # link to quorum
-quorum_url = "http://192.168.66.28:22000"
+quorum_url = "http://127.0.0.1:22002"
 
 
 web3 = Web3(Web3.HTTPProvider(quorum_url))
-#web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-#web3.eth.defaultAccount = web3.eth.accounts[1]
-#web3.parity.personal.unlock_account(web3.eth.accounts[0], "123", 15000)
+web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+web3.eth.defaultAccount = web3.eth.accounts[0]
+web3.parity.personal.unlock_account(web3.eth.accounts[0], "123", 15000)
 
-gov_acct = web3.eth.accounts[1]
+gov_acct = web3.eth.accounts[0]
 
 
 def db_link():
     # link to DB
-    db_url = r'/Users/ariel/Documents/sqlite/quorum.db'
+    db_url = r'/Users/ariel/quorum-local/sqlite/quorum.db'
     db_conn = sqlite3.connect(db_url)
     cur = db_conn.cursor()
     return (cur, db_conn)
@@ -47,7 +47,7 @@ class Workers(threading.Thread):
         print("> Thread", (self.num+1))
         print("> tx_hash:", self.tx_hash, "\n")
         # 抓物件註冊log中的物件屬性、wishlist
-        tx_receipt = web3.eth.getTransactionReceipt(self.tx_hash)
+        tx_receipt = web3.eth.waitForTransactionReceipt(self.tx_hash)
         log_to_process = tx_receipt['logs'][0]
         processed_logs = contract_interface.events.logObjs().processLog(log_to_process)
         obj_attr = processed_logs['args']['attr']
@@ -110,7 +110,7 @@ def checkAttrRecord(obj_attr, wl_attr, _hash_a):
         # 有屬性合約 先從attrRecord合約裡抓log hash，去log查address跟abi，對屬性合約做交易
         print(
             f"> Get attr contract name: {attr_name}, Contract log hash: {log_hash }\n")
-        tx_receipt = web3.eth.getTransactionReceipt(log_hash)
+        tx_receipt = web3.eth.waitForTransactionReceipt(log_hash)
         log_to_process = tx_receipt['logs'][0]
         processed_logs = contract_interface.events.setLog().processLog(log_to_process)
         abi = processed_logs['args']['attrABI']
@@ -166,7 +166,7 @@ def getAttrRecord(records, attr, obj_attr, _hash_a):
 def getObjLog(tx_hash):
     # 根據註冊物件時的log tash，看此物件的願望清單排序1是什麼
     contract_interface = contract_instance("registered")
-    tx_receipt = web3.eth.getTransactionReceipt(tx_hash)
+    tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
     log_to_process = tx_receipt['logs'][0]
     processed_logs = contract_interface.events.logObjs().processLog(log_to_process)
     # print(processed_logs['args'])
@@ -197,7 +197,7 @@ def set_whitelist():
     print(f"> Select the top {x} objects to add to the whitelist\n")
     tx_hash = contract_interface.functions.whiteList(
         x).transact({'from': gov_acct})
-    tx_receipt = web3.eth.getTransactionReceipt(web3.toHex(tx_hash))
+    tx_receipt = web3.eth.waitForTransactionReceipt(web3.toHex(tx_hash))
     log_to_process = tx_receipt['logs'][0]
     processed_logs = contract_interface.events.whitelist_log().processLog(log_to_process)
     print("> Whitelist: ")
@@ -250,7 +250,7 @@ def clean():
 
 def get_event_log(event_hash):
     contract_interface = contract_instance('whitelist')
-    tx_receipt = web3.eth.getTransactionReceipt(event_hash)
+    tx_receipt = web3.eth.waitForTransactionReceipt(event_hash)
     log_to_process = tx_receipt['logs'][0]
     processed_logs = contract_interface.event.whitelist_log().processLog(log_to_process)
     print("> whitelist: ")
