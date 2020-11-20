@@ -1,4 +1,7 @@
 ## Environment setting
+
+### Using Ganache
+
 1. Create virtualenv and install library
 
    ```bash
@@ -30,4 +33,10 @@
    sudo apt-get update
    sudo apt-get install solc
    ```
-   
+
+### Build Quorum locally   
+1. Run `add_node_raft.py`: Will clone the Quorum repo, build, and add 13 nodes on local.
+2. Go to your cloned `quorum/fromscratch` file and run `geth` by `./startnode.sh` to start all nodes.
+3. Run `addPeer.py` file to add other peers automatically into quorum network through command line.
+
+And DONE!
