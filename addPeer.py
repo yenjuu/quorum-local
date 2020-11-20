@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+import time
 import errno
 import pexpect
 import subprocess
@@ -47,3 +48,4 @@ if __name__ == "__main__":
     # cmd in geth & Add node to node1
     for i in range(2, total_num + 1):
         add_node_cmd(i - 1)
+        time.sleep(1)

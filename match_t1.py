@@ -5,13 +5,15 @@ import time
 import pprint
 import sqlite3
 import secrets
+import pyautogui
 import threading
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from web3.providers.eth_tester import EthereumTesterProvider
+import check_atr
 
 # link to quorum
-quorum_url = "http://127.0.0.1:22002"
+quorum_url = "http://127.0.0.1:22003"
 
 
 web3 = Web3(Web3.HTTPProvider(quorum_url))
@@ -97,27 +99,37 @@ def contract_interact(abi, address):
 
 
 def checkAttrRecord(obj_attr, wl_attr, _hash_a):
+    time.sleep(1)
     # obj_attr: A方的物件屬性; wl_attr: A方的 wishlist_attr_1
     print(f"> Check {wl_attr} attribute contract exist or not \n")
     # 從attrRecord contract裡查有無此屬性合約
+    # result, attr_name, log_hash = check_atr.check(wl_attr)
     contract_interface = contract_instance("attrRecord")
     attr_name, log_hash = contract_interface.functions.get_a_data(
-        wl_attr).call()
-    #print(attrName, attrHash)
+        wl_attr).call({"gasLimit": 1000000000})
+    # print("!!!!!!!", attr_name, log_hash)
+    
     if attr_name == "null":
         print(f"> '{wl_attr}' contract isn't exist. \n")
+        print(">>>>>>>>>>>> Timestamp(交換失敗): ", time.time(), " <<<<<<<<<<<<")
+    # if result == False:
+    #     print(f"> '{wl_attr}' contract isn't exist. \n")
+    #     print(">>>>>>>>>>>> Timestamp(交換失敗): ", time.time(), " <<<<<<<<<<<<")
+
     else:
         # 有屬性合約 先從attrRecord合約裡抓log hash，去log查address跟abi，對屬性合約做交易
         print(
             f"> Get attr contract name: {attr_name}, Contract log hash: {log_hash }\n")
         tx_receipt = web3.eth.waitForTransactionReceipt(log_hash)
+        time.sleep(1)
         log_to_process = tx_receipt['logs'][0]
         processed_logs = contract_interface.events.setLog().processLog(log_to_process)
         abi = processed_logs['args']['attrABI']
         address = processed_logs['args']['attrAddress']
         contract_interface = contract_interact(abi, address)
         # 從此屬性合約中，抓出每一筆紀錄
-        records = contract_interface.functions.get_data().call()
+        records = contract_interface.functions.get_data().call(
+            {"gasLimit": 1000000000})
         pprint.pprint(records)
         print(f"> Get all records on '{wl_attr}' contract.\n")
         # NOTE:依序看wishlist有無符合的物品可換？？
@@ -144,6 +156,7 @@ def getAttrRecord(records, attr, obj_attr, _hash_a):
         if wishlist_1 == obj_attr:
             # 交換成功丟雙方hash到log
             print(">>> Exchange success <<<\n")
+            print(">>>>>>>>>>>> Timestamp(交換成功): ", time.time(), " <<<<<<<<<<<<")
             contract_interface = contract_instance("whitelist")
             contract_interface.functions.set_result(
                 str(_hash_a), str(hash_b)).transact({'from': gov_acct})
@@ -181,11 +194,13 @@ def randomNum():
     r = secrets.randbits(64)
     contract_interface = contract_instance("whitelist")
     print("> Calculate the difference of user's secrets with a random number. \n")
-    contract_interface.functions.calc_random(
+    t_hash = contract_interface.functions.calc_random(
         r).transact({'from': gov_acct})
+    web3.eth.waitForTransactionReceipt(t_hash)
     # print(contract_interface.functions.get_data().call())
-    contract_interface.functions.sort().transact({'from': gov_acct})
-    pprint.pprint(contract_interface.functions.get_difference().call())
+    t_hash = contract_interface.functions.sort().transact({'from': gov_acct})
+    web3.eth.waitForTransactionReceipt(t_hash)
+    # pprint.pprint(contract_interface.functions.get_difference().call({"gasLimit": 1000000000}))
     print("\n")
 
 

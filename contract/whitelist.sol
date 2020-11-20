@@ -3,26 +3,21 @@ pragma solidity >=0.4.0 <0.6.0;
 pragma experimental ABIEncoderV2;
 
 contract whitelist {
-    address owner;
-    string[] tx_hash;
-    string[] wl;
     uint256[] D;
     int256[] S;
     int256 R;
-
-    constructor() public {
-        owner = msg.sender;
-    }
+    string[] tx_hash;
+    string[] wl;
+    bool flag = true;
 
     event participant(uint256 num);
     event whitelist_log(string[] whitelist);
     event exchange_result(string hash_a, string hash_b);
-    bool flag = true;
 
     function add_user_secret(string memory _tx_hash, int256 _S) public {
         tx_hash.push(_tx_hash);
         S.push(_S);
-        if (S.length >= 100 && flag == true) {
+        if (S.length > 99 && flag == true) {
             uint256 num = S.length;
             emit participant(num);
             flag = false;
@@ -92,21 +87,6 @@ contract whitelist {
             tmp = concatenate(tmp, "; D: ");
             tmp = concatenate(tmp, uint2str(D[i]));
             tmp = concatenate(tmp, "; ");
-
-            output = concatenate(output, tmp);
-        }
-        return output;
-    }
-
-    function get_difference() public view returns (string memory) {
-        string memory output = "";
-        for (uint256 i = 0; i < D.length; i++) {
-            string memory tmp;
-            tmp = concatenate(tmp, tx_hash[i]);
-            tmp = concatenate(tmp, "; ");
-            tmp = concatenate(tmp, uint2str(D[i]));
-            tmp = concatenate(tmp, "; ");
-
             output = concatenate(output, tmp);
         }
         return output;
@@ -129,7 +109,6 @@ contract whitelist {
                 tmp = tx_hash[i];
                 tx_hash[i] = tx_hash[j];
                 tx_hash[j] = tmp;
-
                 i++;
                 j--;
             }
@@ -145,34 +124,11 @@ contract whitelist {
     {
         return string(abi.encodePacked(a, b));
     }
-
     function abs(int256 _i) internal pure returns (int256) {
         if (_i < 0) {
             return -_i;
-        }
-        return _i;
+        }return _i;
     }
-
-    function int2str(int256 _i) internal pure returns (string memory) {
-        int256 tmp = _i;
-        if (tmp == 0) {
-            return "0";
-        }
-        int256 j = tmp;
-        uint256 len;
-        while (j != 0) {
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint256 k = len - 1;
-        while (tmp != 0) {
-            bstr[k--] = bytes1(uint8(48 + (tmp % 10)));
-            tmp /= 10;
-        }
-        return string(bstr);
-    }
-
     function uint2str(uint256 _i) internal pure returns (string memory) {
         uint256 i = _i;
         if (i == 0) return "0";
@@ -187,10 +143,8 @@ contract whitelist {
         while (i != 0) {
             bstr[k--] = bytes1(uint8(48 + (i % 10)));
             i /= 10;
-        }
-        return string(bstr);
+        }return string(bstr);
     }
-
     function compareStrings(string memory a, string memory b)
         private
         pure

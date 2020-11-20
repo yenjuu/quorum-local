@@ -14,7 +14,7 @@ from web3.middleware import geth_poa_middleware
 
 # link to quorum
 quorum_url = ""
-gov_acct = "0x278f83d701cc7dae370fe48e5c7f0d9560b6c842"
+gov_acct = "0xb87dd33aa6db54a95e8e11919ad8fce3d236c2cb"
 user_acct = ""
 # quorum_url = "http://192.168.66.28:22000"
 # quorum_url = "http://127.0.0.1:22000"
@@ -120,10 +120,13 @@ def registered(_acct, _obj, _attr, _wishlist):
     print("> Transaction Hash: \n" + web3.toHex(tx_hash) + "\n")
     tx_receipt = web3.eth.waitForTransactionReceipt(web3.toHex(tx_hash))
     print("==== Object registered successful!==== \n")
-    print(contract_interface.functions.getUser().call())
-    user_acct = contract_interface.functions.getUser().call()[0]
+    print(contract_interface.functions.getUser().call(
+        {"gasLimit": 1000000000}))
+    user_acct = contract_interface.functions.getUser().call(
+        {"gasLimit": 1000000000})[0]
     tx_hash = web3.toHex(tx_hash)
-    attr = contract_interface.functions.getUser().call()[2]
+    attr = contract_interface.functions.getUser().call(
+        {"gasLimit": 1000000000})[2]
     print("> Object attr: " + attr + "\n")
     return user_acct, tx_hash, attr
 
@@ -132,7 +135,8 @@ def saveHashToAttrContract(user_acct, tx_hash, attr):
     print(f"> Check {attr} attribute contract exist or not \n")
     # 從attrRecord contract裡查有無此屬性合約
     contract_interface = contract_instance("attrRecord")
-    attrName, attrHash = contract_interface.functions.get_a_data(attr).call()
+    attrName, attrHash = contract_interface.functions.get_a_data(
+        attr).call({"gasLimit": 1000000000})
     #print(attrName, attrHash)
     # 無此屬性合約，要改模板，compile & deploy新的屬性合約，將產生屬性合約的hash記在attrRecord上，將user的tx hash記載屬性合約上
     if attrName == "null":
@@ -165,15 +169,19 @@ def saveHashToAttrContract(user_acct, tx_hash, attr):
             contract_interface = contract_instance("attrRecord")
             log_hash = contract_interface.functions.add_event(
                 abi, address).transact({'from': user_acct})
+            web3.eth.waitForTransactionReceipt(log_hash)            
             print("log_hash:", log_hash)
             log_hash = web3.toHex(log_hash)
-            contract_interface.functions.add_data(
+            log_hash2 = contract_interface.functions.add_data(
                 attr_name, log_hash).transact({'from': user_acct})
+            web3.eth.waitForTransactionReceipt(log_hash2)
             print("List attribute contracts in attrRecord.. \n")
-            time.sleep(2)
-            print(contract_interface.functions.get_all_data().call())
+            time.sleep(2.5)
+            print(contract_interface.functions.get_all_data().call(
+                {"gasLimit": 1000000000}))
     # 有屬性合約 先從attrRecord合約裡抓log hash，去log查address跟abi，對屬性合約做交易
-    attr_name, log_hash = contract_interface.functions.get_a_data(attr).call()
+    attr_name, log_hash = contract_interface.functions.get_a_data(
+        attr).call({"gasLimit": 1000000000})
     print(f"Get attr name: {attr_name}, Log hash: {log_hash }\n")
     tx_receipt = web3.eth.waitForTransactionReceipt(log_hash)
     log_to_process = tx_receipt['logs'][0]
@@ -196,8 +204,9 @@ def setWhitelist(tx_hash):
     contract_interface = contract_instance("whitelist")
     t_hash = contract_interface.functions.add_user_secret(
         tx_hash, s).transact({'from': user_acct})
+    t_receipt = web3.eth.waitForTransactionReceipt(web3.toHex(t_hash))
     print("Add user secret to whitelist contract: " + web3.toHex(t_hash) + "\n")
-
+    # print(contract_interface.functions.get_secret().call({"gasLimit": 1000000000}))
     return s
 
 

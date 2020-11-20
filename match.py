@@ -10,7 +10,7 @@ from web3.middleware import geth_poa_middleware
 from web3.providers.eth_tester import EthereumTesterProvider
 
 # link to quorum
-quorum_url = "http://127.0.0.1:22000"
+quorum_url = "http://127.0.0.1:22003"
 
 
 web3 = Web3(Web3.HTTPProvider(quorum_url))
@@ -73,7 +73,7 @@ def getObjAttr(tx_hash):
     # 取得屬性合約 ABI, address
     contract_interface = contract_instance("attrRecord")
     attr_name, log_hash = contract_interface.functions.get_a_data(
-        obj_attr).call()
+        obj_attr).call({"gasLimit": 1000000000})
     if attr_name == "null":
         print(f"> '{obj_attr}' contract isn't exist. \n")
     else:
@@ -101,7 +101,7 @@ def randomNum():
     contract_interface_2 = contract_instance("whitelist")
     contract_interface_2.functions.sort().transact({'from': gov_acct})
     print("???")
-    pprint.pprint(contract_interface.functions.get_difference().call())
+    # pprint.pprint(contract_interface.functions.get_difference().call({"gasLimit": 1000000000}))
     print("\n")
 
 
@@ -121,6 +121,7 @@ def set_whitelist():
     tx_receipt = web3.eth.waitForTransactionReceipt(web3.toHex(tx_hash))
     log_to_process = tx_receipt['logs'][0]
     processed_logs = contract_interface.events.whitelist_log().processLog(log_to_process)
+    print(">>>>>>>>>>>> Timestamp(白名單產生): ", time.time(), " <<<<<<<<<<<<")
     print("> Whitelist: ")
     whitelist = processed_logs['args']['whitelist']
     print(whitelist, "\n")

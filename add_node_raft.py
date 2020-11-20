@@ -216,7 +216,7 @@ def add_node(num):
                 # jfile.write(f"PRIVATE_CONFIG=ignore nohup geth --datadir new-node-{i} --nodiscover --verbosity 5 --networkid 31337 --raft --raftport {50000+i-1} --raftjoinexisting {i} --rpc --rpcaddr 0.0.0.0 --rpcport {22000+i-1} --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --emitcheckpoints --port {21000+i-1} 2>>node{i}.log &")
                 # jfile.write(f"PRIVATE_CONFIG=ignore nohup geth --datadir new-node-{i} --verbosity 5 --networkid 31337 --raft --raftport {50000+i-1} --raftjoinexisting {i} --rpc --rpcaddr 0.0.0.0 --rpcport {22000+i-1} --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --bootnodes --emitcheckpoints --port {21000+i-1} 2>>node{i}.log &")
                 jfile.write(
-                    f"PRIVATE_CONFIG=ignore nohup geth --datadir new-node-{i} --nodiscover --verbosity 5 --networkid 31337 --raft --raftport {50000+i-1} --raftjoinexisting {i} --rpc --rpcaddr 0.0.0.0 --rpcport {22001+i-1} --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --allow-insecure-unlock --emitcheckpoints --port {21000+i-1} 2>>log/node{i}.log &"
+                    f"PRIVATE_CONFIG=ignore nohup geth --datadir new-node-{i} --nodiscover --verbosity 5 --networkid 31337 --raft --raftport {50000+i-1} --raftjoinexisting {i} --rpc --rpcaddr 0.0.0.0 --rpcport {22001+i-1} --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft --allow-insecure-unlock --targetgaslimit '9000000000000' --emitcheckpoints --port {21000+i-1} 2>>log/node{i}.log &"
                 )
                 jfile.write("\n")
         except OSError as exc:
@@ -236,7 +236,12 @@ def add_node(num):
 
 # 生成節點，並複製到datadir
 if __name__ == "__main__":
-    # init()
+    init()
+    # # 改gaslimit後重新初始化節點
+    # init_node(1)
+
+    # 新增其他節點
+    time.sleep(1)
     total_num = 13
     add_node(total_num)
 
