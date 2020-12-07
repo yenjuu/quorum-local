@@ -40,3 +40,6 @@
 3. Run `addPeer.py` file to add other peers automatically into quorum network through command line.
 
 And DONE!
+
+### Blockchain note
+[Some notes about blockchain](https://hackmd.io/@arielchen/HyrsSK8TL)
