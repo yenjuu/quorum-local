@@ -11,7 +11,7 @@ import subprocess
 Add node shell with IBFT consensus
 """
 
-home_path = "/home/quorum"
+home_path = "/Users/ariel/quorum-local"
 ibftTool_path = f"{home_path}/quorum/fromscratchistanbul/istanbul-tools"
 
 
