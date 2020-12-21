@@ -1,4 +1,7 @@
 ## Environment setting
+Steps to set up blockchain environment.
+> ref: [Quorum from Scratch](https://docs.goquorum.consensys.net/en/latest/Tutorials/Create-a-Raft-network/)
+> Or using [Quorum-wizard](https://github.com/ConsenSys/quorum-wizard) to quickly start 7-node blockchain for testing.
 
 ### Using Ganache
 
@@ -41,5 +44,5 @@
 
 And DONE!
 
-### Blockchain note
-[Some notes about blockchain](https://hackmd.io/@arielchen/HyrsSK8TL)
+> ### Blockchain notes
+> [My notes about blockchain](https://hackmd.io/@arielchen/HyrsSK8TL)
