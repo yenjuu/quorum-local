@@ -12,9 +12,9 @@ from web3.providers.eth_tester import EthereumTesterProvider
 from web3.middleware import geth_poa_middleware
 import register
 
-"""
-測試用，一次上架多個物件到區塊鏈上
-"""
+    """
+    測試用，一次註冊多個物件到區塊鏈上
+    """
 
 env_num = 3
 total_num = 13

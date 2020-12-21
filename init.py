@@ -14,9 +14,9 @@ from web3.providers.eth_tester import EthereumTesterProvider
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
-"""
-只跑這個程式就部好除了動態部署的attribute contract 以外所有需要的合約
-"""
+    """
+    只跑這個程式就部好除了動態部署的attribute contract 以外所有需要的合約
+    """
 
 # link to quorum
 # quorum_url = "http://192.168.66.28:22000"

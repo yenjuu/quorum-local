@@ -8,8 +8,9 @@ import errno
 import pexpect
 import subprocess
 
-# 建立node資料夾
-# 新增帳號＆把 節點編號、帳號、密碼 記到.json
+    """
+    建立區塊鏈節點
+    """
 
 
 def run_command(command):
@@ -38,7 +39,6 @@ def autofill(cmd):
 
 
 def add_node_cmd(node_num):
-    # TODO: 測能不能在raft裡成功新增節點
     i = node_num+1
     command = f"cat /Users/ariel/quorum-local/quorum/fromscratch/new-node-{i}/enode"
     enode_id = run_command(command).replace("\n", "")
@@ -223,15 +223,6 @@ def add_node(num):
             if exc.errno != errno.EEXIST:
                 raise
             pass
-
-    # 停掉初始節點，把所有節點都啟動後將節點加入
-    # run_command("killall geth")
-    # change_dir("/Users/ariel/quorum-local/quorum/fromscratch")
-    # run_command("./startnode.sh")
-    # os.system("ps")
-    # cmd in geth & Add node to node1
-    # for i in range(2, num+1):
-    #     add_node_cmd(i-1)
 
 
 # 生成節點，並複製到datadir
