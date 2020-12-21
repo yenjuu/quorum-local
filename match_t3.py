@@ -14,12 +14,18 @@ quorum_url = "http://127.0.0.1:7545"
 
 
 web3 = Web3(Web3.HTTPProvider(quorum_url))
-#web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-#web3.eth.defaultAccount = web3.eth.accounts[1]
-#web3.parity.personal.unlock_account(web3.eth.accounts[0], "123", 15000)
+# web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+# web3.eth.defaultAccount = web3.eth.accounts[1]
+# web3.parity.personal.unlock_account(web3.eth.accounts[0], "123", 15000)
 
 gov_acct = web3.eth.accounts[3]
 
+
+"""EO之一：
+- 2個listener: 聽whitelist 生成 event、聽exchange_result event
+- 負責matching
+- matching完把結果丟到白名單合約
+"""
 
 def db_link():
     # link to DB
@@ -36,7 +42,7 @@ class Workers(threading.Thread):
         self.tx_hash = tx_hash
 
     def getWishlist(self, contract_interface):
-        print("> Thread", (self.num+1))
+        print("> Thread", (self.num + 1))
         print("> tx_hash:", self.tx_hash, "\n")
         # 抓物件註冊log中的物件屬性、wishlist
         tx_receipt = web3.eth.getTransactionReceipt(self.tx_hash)
@@ -56,24 +62,22 @@ class Workers(threading.Thread):
 def contract_instance(contract_name):
     # print(f"> Getting {contract_name} contract address... \n")
     cur, db_conn = db_link()
-    cur.execute("SELECT abi, address FROM contract_data WHERE contract_name = ?", [
-                contract_name])
+    cur.execute(
+        "SELECT abi, address FROM contract_data WHERE contract_name = ?",
+        [contract_name],
+    )
     list = cur.fetchall()
     db_conn.close()
     abi = json.loads(json.dumps(eval(list[0][0])))
     address = list[0][1]
     # print(address + "\n")
-    contract_interface = web3.eth.contract(
-        address=address,
-        abi=abi)
+    contract_interface = web3.eth.contract(address=address, abi=abi)
     return contract_interface
 
 
 def contract_interact(abi, address):
     abi = json.loads(json.dumps(abi))
-    contract_interface = web3.eth.contract(
-        address=address,
-        abi=abi)
+    contract_interface = web3.eth.contract(address=address, abi=abi)
     return contract_interface
 
 
@@ -82,15 +86,15 @@ def checkAttrRecord(obj_attr, wl_attr):
     print(f"> Check {wl_attr} attribute contract exist or not \n")
     # 從attrRecord contract裡查有無此屬性合約
     contract_interface = contract_instance("attrRecord")
-    attr_name, log_hash = contract_interface.functions.get_a_data(
-        wl_attr).call()
-    #print(attrName, attrHash)
+    attr_name, log_hash = contract_interface.functions.get_a_data(wl_attr).call()
+    # print(attrName, attrHash)
     if attr_name == "null":
         print(f"> '{wl_attr}' contract isn't exist. \n")
     else:
         # 有屬性合約 先從attrRecord合約裡抓log hash，去log查address跟abi，對屬性合約做交易
         print(
-            f"> Get attr contract name: {attr_name}, Contract log hash: {log_hash }\n")
+            f"> Get attr contract name: {attr_name}, Contract log hash: {log_hash }\n"
+        )
         tx_receipt = web3.eth.getTransactionReceipt(log_hash)
         log_to_process = tx_receipt['logs'][0]
         processed_logs = contract_interface.events.setLog().processLog(log_to_process)
@@ -116,15 +120,13 @@ def getAttrRecord(records, attr, obj_attr):
         wishlist_1 = getObjLog(detail[1])
         if wishlist_1 == obj_attr:
             print(">>> Exchange success <<<\n")
-            #TODO: 發送交換成功event
+            # TODO: 發送交換成功event
             contract_interface = contract_instance("whitelist")
-            contract_interface.functions.set_result(
-                True).transact({'from': gov_acct})
+            contract_interface.functions.set_result(True).transact({'from': gov_acct})
             break
         else:
-            print(
-                f"> User (A): have {obj_attr}. User (B): want {wishlist_1}. \n")
-            if (i+1) == len(record):
+            print(f"> User (A): have {obj_attr}. User (B): want {wishlist_1}. \n")
+            if (i + 1) == len(record):
                 print(f"No records in {attr} contract anymore. \n")
                 print(f">>> Exchange failed <<< \n")
             else:
@@ -139,7 +141,7 @@ def getObjLog(tx_hash):
     processed_logs = contract_interface.events.logObjs().processLog(log_to_process)
     # print(processed_logs['args'])
     wishlist = processed_logs['args']['wishlist'].split("/")
-    #print(f"> Wishlist: {wishlist}\n")
+    # print(f"> Wishlist: {wishlist}\n")
     print(f"> First priority attr of wishlist: {wishlist[1]} \n")
     return wishlist[1]
 
@@ -149,8 +151,7 @@ def randomNum():
     r = secrets.randbits(64)
     contract_interface = contract_instance("whitelist")
     print("> Calculate the difference of user's secrets with a random number. \n")
-    contract_interface.functions.calc_random(
-        r).transact({'from': gov_acct})
+    contract_interface.functions.calc_random(r).transact({'from': gov_acct})
     # print(contract_interface.functions.get_data().call())
     contract_interface.functions.sort().transact({'from': gov_acct})
     pprint.pprint(contract_interface.functions.get_difference().call())
@@ -163,11 +164,12 @@ def set_whitelist():
     print("> Setting whitelist...\n")
     contract_interface = contract_instance("whitelist")
     print(f"> Select the top {x} objects to add to the whitelist\n")
-    tx_hash = contract_interface.functions.whiteList(
-        x).transact({'from': gov_acct})
+    tx_hash = contract_interface.functions.whiteList(x).transact({'from': gov_acct})
     tx_receipt = web3.eth.getTransactionReceipt(web3.toHex(tx_hash))
     log_to_process = tx_receipt['logs'][0]
-    processed_logs = contract_interface.events.whitelist_log().processLog(log_to_process)
+    processed_logs = contract_interface.events.whitelist_log().processLog(
+        log_to_process
+    )
     print("> Whitelist: ")
     whitelist = processed_logs['args']['whitelist']
     print(whitelist, "\n")
@@ -192,14 +194,6 @@ def match(whitelist):
         print(f"> worker{i} done.")
 
 
-def clean():
-    #TODO: 所有matching執行緒結束後，清空白名單
-    # 刪除合約裡：whitelist secrect array裡已換完的 tx_hash, secret
-    # 再起一個whitelist listener
-    
-    # 清理過期物件（要做？或分另個func做）
-    pass
-
 def get_event_log(event_hash):
     contract_interface = contract_instance('whitelist')
     tx_receipt = web3.eth.getTransactionReceipt(event_hash)
@@ -209,6 +203,7 @@ def get_event_log(event_hash):
     whitelist = processed_logs['args']['whitelist']
     print(whitelist, "\n")
     return whitelist
+
 
 def handle_event(event):
     pprint.pprint(web3.toJSON(event))
@@ -232,7 +227,7 @@ def log_loop(event_filter, poll_interval):
             handle_event(event)
             print(f"Thread-{ident} .. \n")
             # time.sleep(poll_interval)
-            #tag = False
+            # tag = False
             break
 
 
@@ -244,25 +239,29 @@ def log_loop_result(event_filter_result, poll_interval):
         for event in event_filter_result.get_new_entries():
             handle_event_result(event)
             print(f"Thread={ident}.. \n")
-            #tag = False
+            # tag = False
             break
 
 
 def main():
     contract_interface = contract_instance("whitelist")
     event_filter = contract_interface.events.whitelist_log.createFilter(
-        fromBlock='latest')
+        fromBlock='latest'
+    )
     lis_whitelist = threading.Thread(
-        target=log_loop, args=(event_filter, 5), daemon=True)
+        target=log_loop, args=(event_filter, 5), daemon=True
+    )
     lis_whitelist.start()
     print('> lis_whitelist listener start. \n')
     print(f'> lis_whitelist listener: {threading.get_ident()} \n')
 
     # TODO: 聽到交換成功event，清掉屬性合約裡對應的 tx_hash
     event_filter_result = contract_interface.events.exchange_result.createFilter(
-        fromBlock='latest')
-    lis_result = threading.Thread(target=log_loop_result, args=(
-        event_filter_result, 5), daemon=True)
+        fromBlock='latest'
+    )
+    lis_result = threading.Thread(
+        target=log_loop_result, args=(event_filter_result, 5), daemon=True
+    )
     lis_result.start()
     print("> Exchange result Listener start. \n")
     print(f"> lis_result listener: {threading.get_ident()} \n")
