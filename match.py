@@ -21,12 +21,12 @@ web3.parity.personal.unlock_account(web3.eth.accounts[0], "123", 15000)
 gov_acct = web3.eth.accounts[0]
 
 
-    """EO的代表：
-    - 2個listener: 聽最小參與物件數達標的event、聽exchange_result event
-    - 負責丟random number給白名單合約計算白名單
-    - 不負責matching
-    - 聽到交換結果出來後，要重啟一個 lis_setWhitelist
-    """
+"""EO的代表：
+- 2個listener: 聽最小參與物件數達標的event、聽exchange_result event
+- 負責丟random number給白名單合約計算白名單
+- 不負責matching
+- 聽到交換結果出來後，要重啟一個 lis_setWhitelist
+"""
 
 
 def db_link():
@@ -94,7 +94,7 @@ def randomNum():
     r = secrets.randbits(64)
     contract_interface = contract_instance("whitelist")
     print("> Calculate the difference of user's secrets with a random number. \n")
-    contract_interface.functions.calc_random(r).transact({'from': gov_acct})
+    contract_interface.functions.(r).transact({'from': gov_acct})
     # print(contract_interface.functions.get_data().call())
     print("!!!")
     contract_interface_2 = contract_instance("whitelist")
@@ -203,7 +203,7 @@ def log_loop_result(event_filter_result, poll_interval):
 
 def lis_setWhitelist():
     contract_interface = contract_instance("whitelist")
-    event_filter = contract_interface.events.participant.createFilter(
+    event_filter = contract_interface.events.ad.createFilter(
         fromBlock='latest'
     )
     lis_setWhitelist = threading.Thread(

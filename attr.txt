@@ -50,6 +50,20 @@ contract contract_name {
         return (output, list_len);
     }
 
+    function get_a_data(string memory _hash)
+        public
+        view
+        returns (string memory)
+    {
+        for (uint256 i = 0; i < list.length; i++) {
+            attrUser memory data = attrUsers[list[i]];
+            if (comparestring(_hash, list[i])) {
+                return data.timestamp;
+            }
+        }
+        return "a";
+    }
+
     function delete_data(string memory _tx_hash) public returns (bool) {
         for (uint256 i = 0; i < list.length; i++) {
             if (comparestring(list[i], _tx_hash)) {

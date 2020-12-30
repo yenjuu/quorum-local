@@ -14,9 +14,9 @@ from web3.providers.eth_tester import EthereumTesterProvider
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
-    """
-    只跑這個程式就部好除了動態部署的attribute contract 以外所有需要的合約
-    """
+"""
+只跑這個程式就部好除了動態部署的attribute contract 以外所有需要的合約
+"""
 
 # link to quorum
 # quorum_url = "http://192.168.66.28:22000"
@@ -51,11 +51,11 @@ def get_acct(env_num, total_num):
     for i in range(1, total_num + 1):
         keystore = run_command(f"ls new-node-{i}/keystore").split("-")
         keystore = keystore[len(keystore) - 1].replace("\n", "")
-        keystore = "0x"+keystore
+        keystore = "0x" + keystore
         print(type(keystore))
         print("account: ", keystore)
 
-        if (i - 1) > (env_num-1):
+        if (i - 1) > (env_num - 1):
             user_acct.append(keystore)
         else:
             env_acct.append(keystore)
@@ -144,8 +144,7 @@ def delete_db(contract_name):
     cur, db_conn = db_link()
     # contract_name = str(input())
     print("Delete contract: " + contract_name)
-    cur.execute("DELETE FROM contract_data WHERE contract_name=(?)", [
-                contract_name])
+    cur.execute("DELETE FROM contract_data WHERE contract_name=(?)", [contract_name])
     db_conn.commit()
     db_conn.close()
 
