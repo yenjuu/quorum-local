@@ -46,4 +46,4 @@ Steps to set up blockchain environment.
 And DONE!
 
 > ### Blockchain notes
-> [My notes about blockchain](https://hackmd.io/@arielchen/HyrsSK8TL)
+> [My notes about blockchain](https://hackmd.io/@YJ-Chen/HyrsSK8TL)
